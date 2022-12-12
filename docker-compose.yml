@@ -1,0 +1,32 @@
+version: "3"
+services:
+  mysql:
+    image: mysql:8
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+  auth:
+    image: quay.io/keycloak/keycloak:20.0.1
+    command: start-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB_URL: jdbc:mysql://mysql:3306/db?useSSL=false&allowPublicKeyRetrieval=true&zeroDateTimeBehavior=convertToNull
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: root
+      KC_DB: mysql
+      KC_OTP_LENGTH: 6
+      KC_SENDGRID_API_KEY:
+    volumes:
+      - ./target/keycloak.twilio-sms-otp.authenticator-1.0-SNAPSHOT-jar-with-dependencies.jar:/opt/keycloak/providers/keycloak.twilio-sms-otp.authenticator.jar
+      - ./themes:/opt/keycloak/themes
+volumes:
+  db_data: {}
